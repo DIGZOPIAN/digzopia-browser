@@ -14,15 +14,17 @@ const LoginRewardModal: React.FC<LoginRewardModalProps> = ({ isOpen, onClose }) 
   
   useEffect(() => {
     if (isOpen) {
-      const { reward, streak } = incentiveService.processDailyLogin();
-      setReward(reward);
-      setStreak(streak);
+      const { reward: loginReward, streak: updatedStreak } =
+        incentiveService.processDailyLogin();
+      setReward(loginReward);
+      setStreak(updatedStreak);
     }
   }, [isOpen]);
   
   if (!isOpen || !reward) return null;
   
-  const isWeeklyCompletion = streak?.currentStreak && streak.currentStreak % 7 === 0;
+  const isWeeklyCompletion =
+    !!streak?.currentStreak && streak.currentStreak % 7 === 0;
   
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -49,18 +51,22 @@ const LoginRewardModal: React.FC<LoginRewardModalProps> = ({ isOpen, onClose }) 
               Current streak: {streak?.currentStreak} day{streak?.currentStreak !== 1 ? 's' : ''}
             </p>
             <div className="flex justify-center mt-2">
-              {[1, 2, 3, 4, 5, 6, 7].map((day) => (
-                <div 
-                  key={day}
-                  className={`w-8 h-8 mx-1 rounded-full flex items-center justify-center ${
-                    day <= (streak?.currentStreak || 0) % 7 || (day === 7 && (streak?.currentStreak || 0) % 7 === 0)
-                      ? 'bg-green-500 text-white'
-                      : 'bg-gray-200'
-                  }`}
-                >
+              {[1, 2, 3, 4, 5, 6, 7].map((day) => {
+                const remainder = (streak?.currentStreak || 0) % 7;
+                const completed = remainder === 0 ? 7 : remainder;
+                return (
+                  <div
+                    key={day}
+                    className={`w-8 h-8 mx-1 rounded-full flex items-center justify-center ${
+                      day <= completed
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-200'
+                    }`}
+                  >
                   {day}
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
           </div>
           
